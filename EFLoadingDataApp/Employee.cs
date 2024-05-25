@@ -13,10 +13,10 @@ namespace EFLoadingDataApp
         public int Age { get; set; }
 
         public int CompanyId { get; set; }
-        public Company? Company { get; set; }
+        public virtual Company? Company { get; set; }
 
         public int PositionId { get; set; }
-        public Position? Position { get; set; }
+        public virtual Position? Position { get; set; }
     }
 
     public class Company
@@ -24,10 +24,10 @@ namespace EFLoadingDataApp
         public int Id { get; set; }
         public string Title { get; set; } = null!;
 
-        public List<Employee> Employees { get; set; } = new();
+        public virtual List<Employee> Employees { get; set; } = new();
 
         public int CountryId { get; set; }
-        public Country? Country { get; set; }
+        public virtual Country? Country { get; set; }
     }
 
     public class Country
@@ -35,7 +35,7 @@ namespace EFLoadingDataApp
         public int Id { get; set; }
         public string Title { get; set; } = null!;
 
-        public List<Company> Companies { get; set; } = new();
+        public virtual List<Company> Companies { get; set; } = new();
     }
 
     public class Position
@@ -43,6 +43,6 @@ namespace EFLoadingDataApp
         public int Id { get; set; }
         public string Title { get; set; } = null!;
 
-        public List<Employee> Employees { get; set; } = new();
+        public virtual List<Employee> Employees { get; set; } = new();
     }
 }

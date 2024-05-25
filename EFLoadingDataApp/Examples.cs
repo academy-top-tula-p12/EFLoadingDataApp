@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -161,6 +162,113 @@ namespace EFLoadingDataApp
                 //    foreach(var e in c.Employees)
                 //        Console.WriteLine($"\tName: {e.Name}, Age: {e.Age}, Position: {e.Position!.Title}");
                 //}
+
+                var employees = context.Employees
+                                       .Include(e => e.Company)
+                                       .ToList();
+
+                foreach (var e in employees)
+                    Console.WriteLine($"Name: {e.Name} Age: {e.Age} Company: {e.Company?.Title}");
+
+                var company = context.Companies.FirstOrDefault(c => c.Title == "Microsoft");
+                var position = context.Positions.FirstOrDefault();
+                context.Employees.Add(new() { Name = "Viktor", 
+                                              Age = 28, 
+                                              Company = company, 
+                                              Position = position });
+                context.SaveChanges();
+
+                Console.WriteLine();
+                employees = context.Employees
+                                       .Include(e => e.Company)
+                                       .ToList();
+                foreach (var e in employees)
+                    Console.WriteLine($"Name: {e.Name} Age: {e.Age} Company: {e.Company?.Title}");
+            }
+        }
+
+        public static void ExplicitLoadingExample()
+        {
+            void ContextLoad(EmployeeAppContext context, string companyName)
+            {
+                Company company = context.Companies.First(c => c.Title == companyName);
+
+                if (company is not null)
+                {
+                    //context.Employees.Load();
+
+                    //context.Employees
+                    //       .Where(e => e.CompanyId == company.Id)
+                    //       .Load();
+                    context.Entry(company)
+                           .Collection(c => c.Employees)
+                           .Load();
+                    context.Entry(company)
+                           .Reference(c => c.Country)
+                           .Load();
+                    //foreach (Employee emp in company.Employees)
+                    //{
+                    //    Console.WriteLine($"{emp.Name}");
+                    //}
+                }
+            }
+            using (EmployeeAppContext context = new())
+            {
+                string companyName = "Yandex";
+                ContextLoad(context, companyName);
+
+                foreach (Company c in context.Companies)
+                {
+                    Console.WriteLine($"{c.Title} {c.Country?.Title}");
+                    foreach (Employee e in c.Employees)
+                        Console.WriteLine($"\t{e.Name}");
+                }
+
+                Console.WriteLine("\n\n");
+                companyName = "Microsoft";
+                ContextLoad(context, companyName);
+
+                foreach (Company c in context.Companies)
+                {
+                    Console.WriteLine($"{c.Title} {c.Country?.Title}");
+                    foreach (Employee e in c.Employees)
+                        Console.WriteLine($"\t{e.Name}");
+                }
+            }
+        }
+
+        public static void LazyLoadingExample()
+        {
+            using (EmployeeAppContext context = new())
+            {
+                var employees = context.Employees.ToList();
+
+                foreach (var e in employees)
+                {
+                    Console.WriteLine($"{e.Name} {e.Age}");
+                    Console.WriteLine($"\t{e.Company?.Title} {e.Company?.Country?.Title}");
+                    Console.WriteLine($"\t\t{e.Position?.Title}");
+                }
+
+                var company = context.Companies.FirstOrDefault(c => c.Title == "Ozon");
+                var position = context.Positions.FirstOrDefault(p => p.Id == 2);
+                context.Employees.Add(new()
+                {
+                    Name = "Poppy",
+                    Age = 32,
+                    Company = company,
+                    Position = position
+                });
+                context.SaveChanges();
+
+                employees = context.Employees.ToList();
+
+                foreach (var e in employees)
+                {
+                    Console.WriteLine($"{e.Name} {e.Age}");
+                    Console.WriteLine($"\t{e.Company?.Title} {e.Company?.Country?.Title}");
+                    Console.WriteLine($"\t\t{e.Position?.Title}");
+                }
             }
         }
     }
